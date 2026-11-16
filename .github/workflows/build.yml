@@ -12,10 +12,16 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '17'
+      - name: Prepare Web Directory
+        run: |
+          mkdir -p www
+          # Копируем все файлы, кроме системных и серверных
+          find . -maxdepth 1 -type f ! -name "package.json" ! -name "server.js" ! -name "*.yml" -exec cp {} www/ \;
+          find . -maxdepth 1 -type d ! -name "." ! -name ".git" ! -name ".github" ! -name "www" ! -name "android" -exec cp -r {} www/ \;
       - name: Setup Capacitor
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android
-          npx cap init MiniGram com.minigram.app --web-dir=.
+          npx cap init MiniGram com.minigram.app --web-dir=www
           npx cap add android
           npx cap copy
       - name: Build Android
