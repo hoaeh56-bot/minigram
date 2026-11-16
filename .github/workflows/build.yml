@@ -12,15 +12,22 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '17'
-      - name: Install Capacitor
+      - name: Prepare Clean Folder
         run: |
+          mkdir www
+          cp *.html www/ || true
+          cp *.css www/ || true
+          cp *.js www/ || true
+          cp *.png www/ || true
+          cp *.jpg www/ || true
+      - name: Build App
+        run: |
+          cd www
           npm init -y
           npm install @capacitor/core @capacitor/cli @capacitor/android
           npx cap init MiniGram com.minigram.app --web-dir=.
           npx cap add android
           npx cap copy
-      - name: Build APK
-        run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
@@ -28,4 +35,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: MiniGram-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: www/android/app/build/outputs/apk/debug/app-debug.apk
