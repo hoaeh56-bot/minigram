@@ -1,5 +1,5 @@
 name: Build APK
-on: [push]
+on: [push, workflow_dispatch]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -7,17 +7,21 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
       - uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
-      - name: Move web files to www
+      - name: Prepare Web Directory
         run: |
           mkdir -p www
-          cp -r * www/ || true
-          rm -rf www/www || true
-      - name: Init Capacitor in separate folder
+          # Копируем только HTML, CSS, JS, картинки и папки. Исключаем системные файлы.
+          find . -maxdepth 1 -type f \( -name "*.html" -o -name "*.css" -o -name "*.js" -o -name "*.png" -o -name "*.jpg" -o -name "*.svg" -o -name "*.ico" \) -exec cp {} www/ \;
+          find . -maxdepth 1 -type d ! -name "." ! -name ".git" ! -name ".github" ! -name "www" -exec cp -r {} www/ \;
+      - name: Remove PWA files that conflict with Capacitor
+        run: |
+          rm -f www/manifest.json www/sw.js www/server.js www/package.json
+      - name: Init Capacitor
         run: |
           cd www
           npm init -y
