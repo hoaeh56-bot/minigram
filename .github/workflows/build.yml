@@ -12,29 +12,20 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '17'
-      - name: Prepare Web Directory
+      - name: Install Capacitor
         run: |
-          mkdir -p www
-          # Копируем только HTML, CSS, JS, картинки и папки. Исключаем системные файлы.
-          find . -maxdepth 1 -type f \( -name "*.html" -o -name "*.css" -o -name "*.js" -o -name "*.png" -o -name "*.jpg" -o -name "*.svg" -o -name "*.ico" \) -exec cp {} www/ \;
-          find . -maxdepth 1 -type d ! -name "." ! -name ".git" ! -name ".github" ! -name "www" -exec cp -r {} www/ \;
-      - name: Remove PWA files that conflict with Capacitor
-        run: |
-          rm -f www/manifest.json www/sw.js www/server.js www/package.json
-      - name: Init Capacitor
-        run: |
-          cd www
           npm init -y
           npm install @capacitor/core @capacitor/cli @capacitor/android
           npx cap init MiniGram com.minigram.app --web-dir=.
           npx cap add android
+          npx cap copy
       - name: Build APK
         run: |
-          cd www/android
+          cd android
           chmod +x gradlew
           ./gradlew assembleDebug
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: MiniGram-APK
-          path: www/android/app/build/outputs/apk/debug/app-debug.apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
